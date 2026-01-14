@@ -5,10 +5,23 @@ import 'app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
-  await SupabaseClientWrapper.init();
-  runApp(const App());
-}
+  debugPrint('main: starting');
 
-// Les widgets précédents ne sont plus utilisés directement par main,
-// mais on garde MyApp/MyHomePage si vous souhaitez les réutiliser plus tard.
+  await dotenv.load();
+  debugPrint('main: dotenv loaded');
+
+  bool supabaseInitialized = false;
+  try {
+    debugPrint('main: initializing supabase');
+    await SupabaseClientWrapper.init().timeout(const Duration(seconds: 10));
+    supabaseInitialized = true;
+    debugPrint('main: supabase initialized');
+  } catch (e, st) {
+    debugPrint('Warning: Supabase initialization failed: $e');
+    debugPrint('Stack: $st');
+    supabaseInitialized = false;
+  }
+
+  debugPrint('main: running app (supabaseInitialized=$supabaseInitialized)');
+  runApp(App(supabaseInitialized: supabaseInitialized));
+}
